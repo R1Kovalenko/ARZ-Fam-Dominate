@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;600;700;800&family=Oswald:wght@400;600;700&family=Playfair+Display:wght@400;700&family=Roboto+Mono&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0f0f0f;color:#bbb;display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ─── */
+aside{width:310px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;height:100vh}
+.sb-top{padding:12px 14px;border-bottom:1px solid #222;flex-shrink:0}
+.sb-top h2{font-size:13px;font-weight:700;color:#fff;letter-spacing:.02em}
+.sb-top p{font-size:10px;color:#444;margin-top:1px}
+.sb-scroll{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.sb-scroll::-webkit-scrollbar{width:3px}
+.sb-scroll::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.sb-bot{padding:9px 10px;border-top:1px solid #222;display:flex;gap:6px;flex-shrink:0}
+
+/* tabs */
+.tabs{display:flex;gap:3px}
+.tab{flex:1;padding:6px 2px;background:#111;border:1px solid #1e1e1e;border-radius:7px;font-size:10px;color:#444;cursor:pointer;text-align:center;transition:all .15s;font-weight:600;letter-spacing:.02em}
+.tab.on{background:#1e1e1e;border-color:#333;color:#ddd}
+
+/* section boxes */
+.sec{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:10px 11px}
+.sec-t{font-size:9px;color:#444;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px}
+
+/* form elements */
+.lbl{font-size:11px;color:#555;display:block;margin-bottom:3px;margin-top:7px}
+.lbl.f{margin-top:0}
+input[type=text],input[type=number],select,textarea{width:100%;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:6px;padding:6px 9px;color:#ccc;font-size:11px;outline:none;font-family:inherit;resize:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:#333}
+textarea{line-height:1.4;min-height:34px}
+select option{background:#161616}
+input[type=range]{width:100%;accent-color:#fff;height:3px;cursor:pointer}
+input[type=color]{width:100%;height:28px;border:none;background:#0a0a0a;cursor:pointer;border-radius:6px;padding:2px;display:block;border:1px solid #1e1e1e}
+
+.r2{display:flex;gap:6px}.r2>*{flex:1;min-width:0}
+.r3{display:flex;gap:5px}.r3>*{flex:1;min-width:0}
+.rv{font-size:10px;color:#333;text-align:right;margin-top:1px;font-feature-settings:'tnum'}
+
+/* presets */
+.presets{display:flex;gap:5px;flex-wrap:wrap}
+.preset{padding:5px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+
+/* swatches */
+.sws{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.sw.on{border-color:#fff;box-shadow:0 0 0 1px #000}
+.swc{width:22px;height:22px;border-radius:50%;border:1px solid #333;overflow:hidden;position:relative;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#444}
+.swc input{position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);opacity:0;cursor:pointer}
+
+/* record list */
+.ri{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:7px;padding:8px 9px;margin-bottom:4px;cursor:pointer;transition:border-color .15s}
+.ri:hover{border-color:#2a2a2a}
+.ri.on{border-color:#e8b84b}
+.ri-h{display:flex;align-items:center;gap:6px}
+.ri-ic{font-size:15px;flex-shrink:0;width:22px;text-align:center}
+.ri-nm{font-size:11px;font-weight:600;color:#ccc;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ri-sub{font-size:10px;color:#333;margin-top:2px;padding-left:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dx{background:none;border:none;color:#222;cursor:pointer;font-size:14px;transition:color .15s;flex-shrink:0}
+.dx:hover{color:#e24b4a}
+.ef{background:#060606;border:1px solid #1a1a1a;border-radius:6px;padding:9px;margin-top:7px;display:flex;flex-direction:column;gap:5px}
+
+.add-btn{width:100%;padding:6px;border:1px dashed #1e1e1e;border-radius:7px;background:none;color:#333;font-size:11px;cursor:pointer;transition:all .15s;margin-top:3px}
+.add-btn:hover{border-color:#333;color:#777}
+
+.btn{flex:1;padding:8px;border-radius:7px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.02em}
+.bt-all{background:#e8b84b;color:#111}.bt-all:hover{background:#d4a83a}
+.bt-reset{background:#1a1a1a;color:#555;border:1px solid #1e1e1e}.bt-reset:hover{color:#aaa}
+
+/* ─── MAIN ─── */
+main{flex:1;overflow:auto;background:#0a0a0a;display:flex;align-items:flex-start;justify-content:center;padding:24px}
+.cards-wrap{display:flex;flex-direction:column;gap:14px;align-items:center}
+
+/* save btn under card */
+.save-under{padding:6px 0;border:none;border-radius:8px;font-size:11px;cursor:pointer;transition:opacity .15s;font-family:inherit;font-weight:600;letter-spacing:.02em}
+.save-under:hover{opacity:.7}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="sb-top">
+    <h2>📖 Книга рекордов</h2>
+    <p>Живой превью · Полные настройки</p>
+  </div>
+  <div class="sb-scroll">
+    <div class="tabs">
+      <div class="tab on" onclick="ST('t-pre',this)">Пресеты</div>
+      <div class="tab" onclick="ST('t-card',this)">Карточка</div>
+      <div class="tab" onclick="ST('t-font',this)">Текст</div>
+      <div class="tab" onclick="ST('t-rec',this)">Записи</div>
+    </div>
+
+    <!-- ══ PRESETS ══ -->
+    <div id="t-pre">
+      <div class="sec">
+        <div class="sec-t">Быстрые пресеты</div>
+        <div class="presets">
+          <div class="preset" style="background:#1a1208;color:#f0c040;border-color:#3a2a00" onclick="applyPreset('gold')">Золото</div>
+          <div class="preset" style="background:#2b2d31;color:#fff;border-color:#1e1f22" onclick="applyPreset('discord')">Discord</div>
+          <div class="preset" style="background:#0d1117;color:#58a6ff;border-color:#30363d" onclick="applyPreset('midnight')">GitHub</div>
+          <div class="preset" style="background:#0f1923;color:#4fa3e0;border-color:#1a3a5c" onclick="applyPreset('blue')">Синий</div>
+          <div class="preset" style="background:#1a0e2e;color:#a78bfa;border-color:#3a2060" onclick="applyPreset('purple')">Фиолет</div>
+          <div class="preset" style="background:#0d1a0e;color:#4ade80;border-color:#1a3a1c" onclick="applyPreset('green')">Зелёный</div>
+          <div class="preset" style="background:#1a0e0e;color:#f87171;border-color:#3a1a1a" onclick="applyPreset('red')">Красный</div>
+          <div class="preset" style="background:#1a1008;color:#fb923c;border-color:#3a2208" onclick="applyPreset('orange')">Оранжевый</div>
+          <div class="preset" style="background:#1a0d18;color:#f472b6;border-color:#3a1030" onclick="applyPreset('pink')">Розовый</div>
+          <div class="preset" style="background:#081a1a;color:#22d3ee;border-color:#0e4a50" onclick="applyPreset('cyan')">Циан</div>
+          <div class="preset" style="background:#111;color:#e5e5e5;border-color:#2a2a2a" onclick="applyPreset('onyx')">Оникс</div>
+          <div class="preset" style="background:#0a0a18;color:#c084fc;border-color:#1a0e30" onclick="applyPreset('cosmos')">Космос</div>
+          <div class="preset" style="background:#010d01;color:#00ff41;border-color:#003a10" onclick="applyPreset('matrix')">Matrix</div>
+          <div class="preset" style="background:#fff;color:#111;border-color:#e5e7eb" onclick="applyPreset('light')">Светлый</div>
+          <div class="preset" style="background:#f9f6ee;color:#3a2c1a;border-color:#d4c4a8" onclick="applyPreset('paper')">Бумага</div>
+        </div>
+      </div>
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Фон карточки</div>
+        <div class="sws" id="sws">
+          <div class="sw on" data-c="#ffffff" style="background:#fff;border-color:#aaa"></div>
+          <div class="sw" data-c="#f9f6ee" style="background:#f9f6ee;border-color:#bbb"></div>
+          <div class="sw" data-c="#1a1208" style="background:#1a1208"></div>
+          <div class="sw" data-c="#0f1923" style="background:#0f1923"></div>
+          <div class="sw" data-c="#1a0e2e" style="background:#1a0e2e"></div>
+          <div class="sw" data-c="#0f1a10" style="background:#0f1a10"></div>
+          <div class="sw" data-c="#1a1a1a" style="background:#1a1a1a"></div>
+          <div class="swc">+<input type="color" id="swCustom" value="#ffffff" oninput="S.cardBg=this.value;syncSws();R()"></div>
+        </div>
+        <span class="lbl" style="margin-top:8px">Или введи hex</span>
+        <input type="text" id="iBg" placeholder="#1a1208" oninput="if(this.value.length>=4){S.cardBg=this.value;R()}">
+      </div>
+    </div>
+
+    <!-- ══ CARD ══ -->
+    <div id="t-card" style="display:none">
+      <div class="sec">
+        <div class="sec-t">Размеры</div>
+        <span class="lbl f">Ширина карточки</span>
+        <input type="range" id="iW" min="280" max="640" value="420" oninput="S.w=+this.value;g('rvW').textContent=this.value+'px';R()">
+        <div class="rv" id="rvW">420px</div>
+        <span class="lbl">Внутренний отступ</span>
+        <input type="range" id="iPad" min="8" max="40" value="18" oninput="S.pad=+this.value;R()">
+        <span class="lbl">Скругление углов</span>
+        <input type="range" id="iRad" min="0" max="32" value="14" oninput="S.rad=+this.value;R()">
+        <span class="lbl">Отступ между строками</span>
+        <input type="range" id="iGap" min="2" max="24" value="9" oninput="S.gap=+this.value;R()">
+      </div>
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Рамка</div>
+        <div class="r2">
+          <div><span class="lbl f">Цвет</span><input type="color" id="iBorderC" value="#e8e8e8" oninput="S.borderC=this.value;R()"></div>
+          <div><span class="lbl f">Толщина</span><input type="range" id="iBorderW" min="0" max="4" value="1" step=".5" oninput="S.borderW=+this.value;R()"></div>
+        </div>
+        <span class="lbl">Прозрачность рамки (%)</span>
+        <input type="range" id="iBorderA" min="0" max="100" value="100" oninput="S.borderA=+this.value;R()">
+      </div>
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Разделители</div>
+        <div class="r2">
+          <div><span class="lbl f">Цвет</span><input type="color" id="iDivC" value="#e8e8e8" oninput="S.divC=this.value;R()"></div>
+          <div><span class="lbl f">Толщина</span><input type="range" id="iDivW" min="0" max="3" value="1" step=".5" oninput="S.divW=+this.value;R()"></div>
+        </div>
+        <span class="lbl">Прозрачность (%)</span>
+        <input type="range" id="iDivA" min="0" max="100" value="100" oninput="S.divA=+this.value;R()">
+      </div>
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Иконка</div>
+        <div class="r2">
+          <div><span class="lbl f">Фон иконки</span><input type="color" id="iIconBg" value="#f3f4f6" oninput="S.iconBg=this.value;R()"></div>
+          <div><span class="lbl f">Прозрач. (%)</span><input type="range" id="iIconBgA" min="0" max="100" value="100" oninput="S.iconBgA=+this.value;R()"></div>
+        </div>
+        <div class="r2" style="margin-top:6px">
+          <div><span class="lbl f">Размер иконки</span><input type="range" id="iIconSz" min="12" max="40" value="20" oninput="S.iconSz=+this.value;R()"></div>
+          <div><span class="lbl f">Размер круга</span><input type="range" id="iIconCirc" min="28" max="64" value="42" oninput="S.iconCirc=+this.value;R()"></div>
+        </div>
+      </div>
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Бейдж (#1, #2...)</div>
+        <div class="r2">
+          <div><span class="lbl f">Фон</span><input type="color" id="iBadgeBg" value="#f3f4f6" oninput="S.badgeBg=this.value;R()"></div>
+          <div><span class="lbl f">Текст</span><input type="color" id="iBadgeC" value="#e8b84b" oninput="S.badgeC=this.value;R()"></div>
+        </div>
+      </div>
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Тень карточки</div>
+        <select id="iShadow" onchange="S.shadow=this.value;R()">
+          <option value="none">Нет</option>
+          <option value="0 2px 12px rgba(0,0,0,.18)">Лёгкая</option>
+          <option value="0 6px 24px rgba(0,0,0,.35)">Средняя</option>
+          <option value="0 12px 40px rgba(0,0,0,.6)">Сильная</option>
+          <option value="0 0 0 2px rgba(232,184,75,.5)">Акцент-контур</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ══ FONT/TEXT ══ -->
+    <div id="t-font" style="display:none">
+      <div class="sec">
+        <div class="sec-t">Глобальный шрифт</div>
+        <select id="iFont" onchange="S.font=this.value;R()">
+          <option value="Inter,sans-serif">Inter (современный)</option>
+          <option value="Montserrat,sans-serif">Montserrat (жирный)</option>
+          <option value="Oswald,sans-serif">Oswald (заголовочный)</option>
+          <option value="'Playfair Display',serif">Playfair Display (элегантный)</option>
+          <option value="'Roboto Mono',monospace">Roboto Mono (моно)</option>
+          <option value="Arial,sans-serif">Arial</option>
+          <option value="Georgia,serif">Georgia</option>
+          <option value="Verdana,sans-serif">Verdana</option>
+        </select>
+        <span class="lbl">Тень текста</span>
+        <select id="iTShad" onchange="S.tshad=this.value;R()">
+          <option value="none">Нет</option>
+          <option value="0 1px 4px rgba(0,0,0,.6)">Лёгкая</option>
+          <option value="0 2px 8px rgba(0,0,0,1)">Сильная</option>
+          <option value="1px 1px 0 rgba(0,0,0,.8)">Резкая</option>
+        </select>
+      </div>
+
+      <!-- TITLE -->
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Название рекорда</div>
+        <div class="r2">
+          <div><span class="lbl f">Цвет</span><input type="color" id="iTitleC" value="#e8b84b" oninput="S.titleC=this.value;R()"></div>
+          <div><span class="lbl f">Размер (px)</span><input type="range" id="iTitleSz" min="10" max="24" value="14" oninput="S.titleSz=+this.value;g('rvTS').textContent=this.value;R()"></div>
+        </div>
+        <div class="rv" id="rvTS">14</div>
+        <div class="r2" style="margin-top:5px">
+          <div><span class="lbl f">Жирность</span>
+            <select id="iTitleW" onchange="S.titleW=this.value;R()">
+              <option value="400">400</option><option value="500">500</option>
+              <option value="600">600</option><option value="700" selected>700</option><option value="800">800</option>
+            </select>
+          </div>
+          <div><span class="lbl f">Шрифт</span>
+            <select id="iTitleFont" onchange="S.titleFont=this.value;R()">
+              <option value="">— общий —</option>
+              <option value="Inter,sans-serif">Inter</option>
+              <option value="Montserrat,sans-serif">Montserrat</option>
+              <option value="Oswald,sans-serif">Oswald</option>
+              <option value="'Playfair Display',serif">Playfair</option>
+              <option value="Arial,sans-serif">Arial</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESC -->
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Описание</div>
+        <div class="r2">
+          <div><span class="lbl f">Цвет</span><input type="color" id="iDescC" value="#9ca3af" oninput="S.descC=this.value;R()"></div>
+          <div><span class="lbl f">Размер</span><input type="range" id="iDescSz" min="8" max="16" value="12" oninput="S.descSz=+this.value;R()"></div>
+        </div>
+        <div class="r2" style="margin-top:5px">
+          <div><span class="lbl f">Стиль</span>
+            <select id="iDescStyle" onchange="S.descStyle=this.value;R()">
+              <option value="normal">Обычный</option><option value="italic">Курсив</option>
+            </select>
+          </div>
+          <div><span class="lbl f">Шрифт</span>
+            <select id="iDescFont" onchange="S.descFont=this.value;R()">
+              <option value="">— общий —</option>
+              <option value="Inter,sans-serif">Inter</option>
+              <option value="Georgia,serif">Georgia</option>
+              <option value="'Roboto Mono',monospace">Mono</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- LABELS -->
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Метки (Рекорд / Держатель)</div>
+        <div class="r2">
+          <div><span class="lbl f">Цвет</span><input type="color" id="iLblC" value="#9ca3af" oninput="S.lblC=this.value;R()"></div>
+          <div><span class="lbl f">Размер</span><input type="range" id="iLblSz" min="8" max="16" value="12" oninput="S.lblSz=+this.value;R()"></div>
+        </div>
+        <div class="r2" style="margin-top:5px">
+          <div><span class="lbl f">Текст "Рекорд"</span><input type="text" id="iLblRec" value="&#128081; Рекорд" oninput="S.lblRec=this.value;R()"></div>
+          <div><span class="lbl f">Текст "Держатель"</span><input type="text" id="iLblHold" value="&#128100; Держатель" oninput="S.lblHold=this.value;R()"></div>
+        </div>
+      </div>
+
+      <!-- VALUES -->
+      <div class="sec" style="margin-top:8px">
+        <div class="sec-t">Значения</div>
+        <div class="r2">
+          <div><span class="lbl f">Цвет</span><input type="color" id="iValC" value="#111111" oninput="S.valC=this.value;R()"></div>
+          <div><span class="lbl f">Цвет пустого</span><input type="color" id="iEmptyC" value="#cccccc" oninput="S.emptyC=this.value;R()"></div>
+        </div>
+        <div class="r2" style="margin-top:5px">
+          <div><span class="lbl f">Размер</span><input type="range" id="iValSz" min="8" max="18" value="12" oninput="S.valSz=+this.value;R()"></div>
+          <div><span class="lbl f">Жирность</span>
+            <select id="iValW" onchange="S.valW=this.value;R()">
+              <option value="400">400</option><option value="500">500</option>
+              <option value="600" selected>600</option><option value="700">700</option>
+            </select>
+          </div>
+        </div>
+        <div class="r2" style="margin-top:5px">
+          <div><span class="lbl f">Выравнивание</span>
+            <select id="iValAlign" onchange="S.valAlign=this.value;R()">
+              <option value="right">Право</option><option value="left">Лево</option><option value="center">Центр</option>
+            </select>
+          </div>
+          <div><span class="lbl f">Шрифт</span>
+            <select id="iValFont" onchange="S.valFont=this.value;R()">
+              <option value="">— общий —</option>
+              <option value="Inter,sans-serif">Inter</option>
+              <option value="'Roboto Mono',monospace">Mono</option>
+              <option value="Georgia,serif">Georgia</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RECORDS ══ -->
+    <div id="t-rec" style="display:none">
+      <div class="sec">
+        <div class="sec-t">Список рекордов</div>
+        <div id="elRec"></div>
+        <button class="add-btn" onclick="addRec()">+ Добавить рекорд</button>
+      </div>
+    </div>
+
+  </div>
+  <div class="sb-bot">
+    <button class="btn bt-reset" onclick="R()">↺</button>
+    <button class="btn bt-all" onclick="saveAll()">💾 Все PNG</button>
+  </div>
+</aside>
+
+<main>
+  <div class="cards-wrap" id="wrap"></div>
+</main>
+
+<script>
+// ── STATE ──
+let S={
+  cardBg:'#ffffff', w:420, pad:18, rad:14, gap:9,
+  borderC:'#e8e8e8', borderW:1, borderA:100,
+  divC:'#e8e8e8', divW:1, divA:100,
+  iconBg:'#f3f4f6', iconBgA:100, iconSz:20, iconCirc:42,
+  badgeBg:'#f3f4f6', badgeC:'#e8b84b',
+  shadow:'none',
+  font:'Inter,sans-serif', tshad:'none',
+  titleC:'#e8b84b', titleSz:14, titleW:'700', titleFont:'',
+  descC:'#9ca3af', descSz:12, descStyle:'normal', descFont:'',
+  lblC:'#9ca3af', lblSz:12, lblRec:'👑 Рекорд', lblHold:'👤 Держатель',
+  valC:'#111111', emptyC:'#cccccc', valSz:12, valW:'600', valAlign:'right', valFont:'',
+};
+
+let recs=[
+  {icon:'💸',title:'💎 Благодетель Dominate 💎',desc:'Кто вложил больше всех в развитие семьи — истинный меценат!',record:'15.500.000.000$',holder:'Sanechka_Vulkanovsky'},
+  {icon:'⚔',title:'👑 Легендарный заместитель 👑',desc:'Самое долгое время на посту заместителя семьи.',record:'06.10.2024 — по сей день',holder:'Renminbi_Vidal'},
+  {icon:'🎯',title:'🗺 Покоритель Квестов 🗺',desc:'Тот, кто сделал больше всех семейных заданий!',record:'…',holder:'…'},
+  {icon:'📰',title:'📜 Король Прессы 📜',desc:'Самый долгий срок на посту лидера СМИ Сан-Фиерро.',record:'…',holder:'Requiem_Onmyneck'},
+  {icon:'🧠',title:'🧠 Гений Редакции 🧠',desc:'Зам, чьё имя помнят все журналисты города.',record:'…',holder:'…'},
+  {icon:'📝',title:'💬 Мастер Слова 💬',desc:'Больше всех отредактировал объявлений!',record:'…',holder:'…'},
+  {icon:'🔥',title:'🔥 Вербовочная Машина 🔥',desc:'Больше всех принял в семью людей за сутки.',record:'110 человек',holder:'Tankich_Moon'},
+];
+
+let activeI=-1;
+
+// ── PRESETS ──
+const PRESETS={
+  // ── DARK (Discord-style) ──
+  gold:    {cardBg:'#1a1208',titleC:'#f0c040',descC:'#a08030',lblC:'#6a4e10',valC:'#fff5cc',emptyC:'#4a3a10',borderC:'#f0c040',borderA:22,divC:'#f0c040',divA:12,iconBg:'#f0c040',iconBgA:12,badgeBg:'#2a1e00',badgeC:'#f0c040',shadow:'0 4px 20px rgba(240,192,64,.15)'},
+  discord: {cardBg:'#2b2d31',titleC:'#ffffff',descC:'#949ba4',lblC:'#5c6068',valC:'#e0e1e5',emptyC:'#3a3d44',borderC:'#1e1f22',borderA:100,divC:'#3a3d44',divA:100,iconBg:'#383a40',iconBgA:100,badgeBg:'#383a40',badgeC:'#949ba4',shadow:'none'},
+  midnight:{cardBg:'#0d1117',titleC:'#58a6ff',descC:'#484f58',lblC:'#30363d',valC:'#c9d1d9',emptyC:'#21262d',borderC:'#30363d',borderA:100,divC:'#21262d',divA:100,iconBg:'#161b22',iconBgA:100,badgeBg:'#161b22',badgeC:'#58a6ff',shadow:'0 4px 16px rgba(0,0,0,.4)'},
+  blue:    {cardBg:'#0f1923',titleC:'#4fa3e0',descC:'#2d5a7a',lblC:'#1e3a50',valC:'#cce4f7',emptyC:'#1a3a5c',borderC:'#4fa3e0',borderA:20,divC:'#4fa3e0',divA:12,iconBg:'#4fa3e0',iconBgA:12,badgeBg:'#0a1520',badgeC:'#4fa3e0',shadow:'0 4px 20px rgba(79,163,224,.12)'},
+  purple:  {cardBg:'#1a0e2e',titleC:'#a78bfa',descC:'#5a4080',lblC:'#3a2860',valC:'#e0d0ff',emptyC:'#2a1840',borderC:'#a78bfa',borderA:22,divC:'#a78bfa',divA:12,iconBg:'#a78bfa',iconBgA:12,badgeBg:'#140a24',badgeC:'#a78bfa',shadow:'0 4px 20px rgba(167,139,250,.15)'},
+  green:   {cardBg:'#0d1a0e',titleC:'#4ade80',descC:'#2a5030',lblC:'#1a3020',valC:'#d0ffe0',emptyC:'#162a18',borderC:'#4ade80',borderA:20,divC:'#4ade80',divA:12,iconBg:'#4ade80',iconBgA:12,badgeBg:'#081208',badgeC:'#4ade80',shadow:'0 4px 20px rgba(74,222,128,.12)'},
+  red:     {cardBg:'#1a0e0e',titleC:'#f87171',descC:'#7a3030',lblC:'#4a2020',valC:'#ffe0e0',emptyC:'#2a1010',borderC:'#f87171',borderA:20,divC:'#f87171',divA:12,iconBg:'#f87171',iconBgA:12,badgeBg:'#100808',badgeC:'#f87171',shadow:'0 4px 20px rgba(248,113,113,.12)'},
+  orange:  {cardBg:'#1a1008',titleC:'#fb923c',descC:'#7a4010',lblC:'#4a2808',valC:'#ffe8cc',emptyC:'#2a1808',borderC:'#fb923c',borderA:20,divC:'#fb923c',divA:12,iconBg:'#fb923c',iconBgA:12,badgeBg:'#100a04',badgeC:'#fb923c',shadow:'0 4px 20px rgba(251,146,60,.12)'},
+  pink:    {cardBg:'#1a0d18',titleC:'#f472b6',descC:'#7a2a60',lblC:'#4a1840',valC:'#ffe0f4',emptyC:'#2a0e20',borderC:'#f472b6',borderA:20,divC:'#f472b6',divA:12,iconBg:'#f472b6',iconBgA:12,badgeBg:'#10060e',badgeC:'#f472b6',shadow:'0 4px 20px rgba(244,114,182,.12)'},
+  cyan:    {cardBg:'#081a1a',titleC:'#22d3ee',descC:'#1a6a70',lblC:'#0e4a50',valC:'#ccf8ff',emptyC:'#0a2a2a',borderC:'#22d3ee',borderA:20,divC:'#22d3ee',divA:12,iconBg:'#22d3ee',iconBgA:12,badgeBg:'#040e0e',badgeC:'#22d3ee',shadow:'0 4px 20px rgba(34,211,238,.12)'},
+  onyx:    {cardBg:'#111111',titleC:'#e5e5e5',descC:'#555',lblC:'#333',valC:'#e5e5e5',emptyC:'#2a2a2a',borderC:'#2a2a2a',borderA:100,divC:'#222',divA:100,iconBg:'#1e1e1e',iconBgA:100,badgeBg:'#1e1e1e',badgeC:'#777',shadow:'none'},
+  cosmos:  {cardBg:'#0a0a18',titleC:'#c084fc',descC:'#5a3a80',lblC:'#3a2060',valC:'#ede0ff',emptyC:'#1a0e30',borderC:'#c084fc',borderA:22,divC:'#c084fc',divA:12,iconBg:'#c084fc',iconBgA:10,badgeBg:'#060410',badgeC:'#c084fc',shadow:'0 4px 24px rgba(192,132,252,.18)'},
+  matrix:  {cardBg:'#010d01',titleC:'#00ff41',descC:'#006620',lblC:'#003a10',valC:'#80ff90',emptyC:'#002208',borderC:'#00ff41',borderA:20,divC:'#00ff41',divA:10,iconBg:'#00ff41',iconBgA:8,badgeBg:'#000800',badgeC:'#00ff41',shadow:'0 0 20px rgba(0,255,65,.15)'},
+  // ── LIGHT ──
+  light:   {cardBg:'#ffffff',titleC:'#111827',descC:'#6b7280',lblC:'#9ca3af',valC:'#111827',emptyC:'#d1d5db',borderC:'#e5e7eb',borderA:100,divC:'#f3f4f6',divA:100,iconBg:'#f9fafb',iconBgA:100,badgeBg:'#f3f4f6',badgeC:'#374151',shadow:'0 2px 8px rgba(0,0,0,.08)'},
+  paper:   {cardBg:'#f9f6ee',titleC:'#3a2c1a',descC:'#8a7060',lblC:'#b09a80',valC:'#3a2c1a',emptyC:'#c8b8a0',borderC:'#d4c4a8',borderA:100,divC:'#e8d8c0',divA:100,iconBg:'#efe8d8',iconBgA:100,badgeBg:'#efe8d8',badgeC:'#8a7060',shadow:'0 2px 8px rgba(0,0,0,.06)'},
+};
+
+function applyPreset(name){
+  const p=PRESETS[name];
+  Object.assign(S,p);
+  syncInputs();R();
+}
+
+function syncInputs(){
+  const map={
+    cardBg:'iBg', borderC:'iBorderC', borderA:'iBorderA', borderW:'iBorderW',
+    divC:'iDivC', divA:'iDivA', divW:'iDivW',
+    iconBg:'iIconBg', iconBgA:'iIconBgA', iconSz:'iIconSz', iconCirc:'iIconCirc',
+    badgeBg:'iBadgeBg', badgeC:'iBadgeC',
+    shadow:'iShadow', font:'iFont', tshad:'iTShad',
+    titleC:'iTitleC', titleSz:'iTitleSz', titleW:'iTitleW', titleFont:'iTitleFont',
+    descC:'iDescC', descSz:'iDescSz', descStyle:'iDescStyle', descFont:'iDescFont',
+    lblC:'iLblC', lblSz:'iLblSz', lblRec:'iLblRec', lblHold:'iLblHold',
+    valC:'iValC', emptyC:'iEmptyC', valSz:'iValSz', valW:'iValW', valAlign:'iValAlign', valFont:'iValFont',
+    w:'iW', pad:'iPad', rad:'iRad', gap:'iGap',
+  };
+  for(const[k,id]of Object.entries(map)){const el=g(id);if(el)el.value=S[k];}
+  g('rvW').textContent=S.w+'px';
+  g('rvTS').textContent=S.titleSz;
+  syncSws();
+}
+
+// ── UTILS ──
+function ST(id,el){['t-pre','t-card','t-font','t-rec'].forEach(t=>g(t).style.display='none');g(id).style.display='';document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+function g(id){return document.getElementById(id);}
+function gv(id){return g(id)?g(id).value:'';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function hexA(hex,pct){if(!hex||hex.length<7)return hex;const r=parseInt(hex.slice(1,3),16),g2=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g2},${b},${(pct/100).toFixed(2)})`;}
+
+function syncSws(){
+  document.querySelectorAll('.sw').forEach(sw=>{sw.classList.toggle('on',sw.dataset.c===S.cardBg);});
+}
+
+function initSws(){
+  document.querySelectorAll('.sw').forEach(sw=>{
+    sw.addEventListener('click',()=>{
+      S.cardBg=sw.dataset.c;g('iBg').value=S.cardBg;g('swCustom').value=S.cardBg;
+      syncSws();R();
+    });
+  });
+}
+
+// ── SIDEBAR RECORDS ──
+let activeIdx=-1;
+function buildSidebar(){
+  g('elRec').innerHTML=recs.map((r,i)=>`
+    <div class="ri ${activeIdx===i?'on':''}" onclick="toggleEdit(${i})">
+      <div class="ri-h">
+        <span class="ri-ic">${r.icon}</span>
+        <span class="ri-nm">${r.title}</span>
+        <button class="dx" onclick="event.stopPropagation();delRec(${i})">×</button>
+      </div>
+      <div class="ri-sub">${r.holder!=='…'?r.holder:'—'} · ${r.record!=='…'?r.record:'нет рекорда'}</div>
+      ${activeIdx===i?`<div class="ef">
+        <div class="r2">
+          <div><span class="lbl f" style="font-size:10px">Иконка</span><input type="text" value="${esc(r.icon)}" oninput="recs[${i}].icon=this.value;buildSidebar();R()"></div>
+          <div><span class="lbl f" style="font-size:10px">Рекорд</span><input type="text" value="${esc(r.record)}" oninput="recs[${i}].record=this.value;R()"></div>
+        </div>
+        <span class="lbl" style="font-size:10px">Название</span>
+        <input type="text" value="${esc(r.title)}" oninput="recs[${i}].title=this.value;buildSidebar();R()">
+        <span class="lbl" style="font-size:10px">Описание</span>
+        <textarea rows="2" oninput="recs[${i}].desc=this.value;R()">${esc(r.desc)}</textarea>
+        <span class="lbl" style="font-size:10px">Держатель</span>
+        <input type="text" value="${esc(r.holder)}" oninput="recs[${i}].holder=this.value;R()">
+      </div>`:''}
+    </div>`).join('');
+}
+function toggleEdit(i){activeIdx=activeIdx===i?-1:i;buildSidebar();}
+function delRec(i){recs.splice(i,1);if(activeIdx>=recs.length)activeIdx=-1;buildSidebar();R();}
+function addRec(){recs.push({icon:'🏆',title:'Новый рекорд',desc:'Описание',record:'…',holder:'…'});activeIdx=recs.length-1;buildSidebar();R();}
+
+// ── RENDER ──
+function R(){
+  const {cardBg,w,pad,rad,gap,borderC,borderW,borderA,divC,divW,divA,
+    iconBg,iconBgA,iconSz,iconCirc,badgeBg,badgeC,shadow,
+    font,tshad,titleC,titleSz,titleW,titleFont,
+    descC,descSz,descStyle,descFont,lblC,lblSz,lblRec,lblHold,
+    valC,emptyC,valSz,valW,valAlign,valFont}=S;
+
+  const bC=hexA(borderC,borderA);
+  const dC=hexA(divC,divA);
+  const iBC=hexA(iconBg,iconBgA);
+  const tf=titleFont||font, df=descFont||font, vf=valFont||font;
+
+  const wrap=g('wrap');
+  wrap.innerHTML='';
+
+  recs.forEach((r,i)=>{
+    const empty={rec:r.record==='…'||!r.record,hold:r.holder==='…'||!r.holder};
+
+    const outer=document.createElement('div');
+    outer.style.cssText='display:flex;flex-direction:column;align-items:center;gap:5px';
+
+    const card=document.createElement('div');
+    card.id=`rc-${i}`;
+    card.style.cssText=`width:${w}px;background:${cardBg};border-radius:${rad}px;padding:${pad}px;border:${borderW}px solid ${bC};box-shadow:${shadow};font-family:${font}`;
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+          <div style="width:${iconCirc}px;height:${iconCirc}px;border-radius:50%;background:${iBC};display:flex;align-items:center;justify-content:center;font-size:${iconSz}px;flex-shrink:0">${r.icon}</div>
+          <div style="font-family:${tf};font-size:${titleSz}px;font-weight:${titleW};color:${titleC};line-height:1.3;text-shadow:${tshad};min-width:0">${r.title}</div>
+        </div>
+        <div style="background:${badgeBg};color:${badgeC};font-size:11px;font-weight:700;padding:3px 10px;border-radius:7px;white-space:nowrap;flex-shrink:0;margin-left:8px">#${i+1}</div>
+      </div>
+      <div style="border-top:${divW}px solid ${dC};padding-top:${pad*0.55}px;display:flex;flex-direction:column;gap:${gap}px">
+        <div style="font-family:${df};font-size:${descSz}px;color:${descC};font-style:${descStyle};line-height:1.55;text-shadow:${tshad}">${r.desc}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:${lblSz}px;color:${lblC};text-shadow:${tshad};white-space:nowrap;margin-right:8px">${lblRec}</span>
+          <span style="font-family:${vf};font-size:${valSz}px;font-weight:${valW};color:${empty.rec?emptyC:valC};text-align:${valAlign};text-shadow:${tshad}">${r.record||'…'}</span>
+        </div>
+        <div style="border-top:${divW}px solid ${dC};padding-top:${gap}px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:${lblSz}px;color:${lblC};text-shadow:${tshad};white-space:nowrap;margin-right:8px">${lblHold}</span>
+          <span style="font-family:${vf};font-size:${valSz}px;font-weight:${valW};color:${empty.hold?emptyC:valC};text-align:${valAlign};text-shadow:${tshad}">${r.holder||'…'}</span>
+        </div>
+      </div>
+    `;
+
+    const btn=document.createElement('button');
+    btn.className='save-under';
+    btn.textContent='💾 Сохранить PNG';
+    btn.style.cssText=`width:${w}px;background:#1a1a1a;color:#666;border:1px solid #222;font-family:${font}`;
+    btn.onclick=()=>saveOne(i);
+
+    outer.appendChild(card);
+    outer.appendChild(btn);
+    wrap.appendChild(outer);
+  });
+}
+
+// ── SAVE ──
+function saveOne(i){
+  const el=g(`rc-${i}`);
+  html2canvas(el,{scale:3,useCORS:true,allowTaint:true,backgroundColor:S.cardBg}).then(c=>{
+    const a=document.createElement('a');
+    a.download=`record_${i+1}_${recs[i].holder.replace(/[^a-zA-Zа-яА-Я0-9_]/g,'_')}.png`;
+    a.href=c.toDataURL('image/png');a.click();
+  });
+}
+function saveAll(){recs.forEach((_,i)=>setTimeout(()=>saveOne(i),i*500));}
+
+// ── BIND live inputs ──
+function bindLive(){
+  const map={
+    iW:v=>S.w=+v, iPad:v=>S.pad=+v, iRad:v=>S.rad=+v, iGap:v=>S.gap=+v,
+    iBorderC:v=>S.borderC=v, iBorderW:v=>S.borderW=+v, iBorderA:v=>S.borderA=+v,
+    iDivC:v=>S.divC=v, iDivW:v=>S.divW=+v, iDivA:v=>S.divA=+v,
+    iIconBg:v=>S.iconBg=v, iIconBgA:v=>S.iconBgA=+v, iIconSz:v=>S.iconSz=+v, iIconCirc:v=>S.iconCirc=+v,
+    iBadgeBg:v=>S.badgeBg=v, iBadgeC:v=>S.badgeC=v,
+    iShadow:v=>S.shadow=v, iFont:v=>S.font=v, iTShad:v=>S.tshad=v,
+    iTitleC:v=>S.titleC=v, iTitleSz:v=>{S.titleSz=+v;g('rvTS').textContent=v;},
+    iTitleW:v=>S.titleW=v, iTitleFont:v=>S.titleFont=v,
+    iDescC:v=>S.descC=v, iDescSz:v=>S.descSz=+v, iDescStyle:v=>S.descStyle=v, iDescFont:v=>S.descFont=v,
+    iLblC:v=>S.lblC=v, iLblSz:v=>S.lblSz=+v, iLblRec:v=>S.lblRec=v, iLblHold:v=>S.lblHold=v,
+    iValC:v=>S.valC=v, iEmptyC:v=>S.emptyC=v, iValSz:v=>S.valSz=+v, iValW:v=>S.valW=v,
+    iValAlign:v=>S.valAlign=v, iValFont:v=>S.valFont=v,
+    iBg:v=>{if(v.length>=4){S.cardBg=v;syncSws();}},
+    iW:v=>{S.w=+v;g('rvW').textContent=v+'px';},
+  };
+  for(const[id,fn]of Object.entries(map)){
+    const el=g(id);
+    if(el)el.addEventListener('input',e=>{fn(e.target.value);R();});
+  }
+}
+
+initSws();bindLive();buildSidebar();R();
+</script>
+</body>
+</html>

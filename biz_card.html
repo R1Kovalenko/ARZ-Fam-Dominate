@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#141414;color:#ccc;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px;gap:16px}
+
+.panel{background:#1c1c1c;border:1px solid #2a2a2a;border-radius:12px;padding:14px 16px;width:100%;max-width:480px}
+
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row+.row{margin-top:8px}
+
+label{font-size:11px;color:#666;white-space:nowrap}
+input[type=text],input[type=number],select{background:#111;border:1px solid #2a2a2a;border-radius:7px;padding:6px 10px;color:#ddd;font-size:12px;outline:none;flex:1;min-width:0;transition:border-color .15s}
+input:focus,select:focus{border-color:#444}
+select option{background:#1c1c1c}
+
+.type-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tbtn{padding:4px 10px;border-radius:6px;border:1.5px solid transparent;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;opacity:.75}
+.tbtn.active{opacity:1;border-color:rgba(0,0,0,.2)}
+
+.btn{padding:7px 16px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-save{background:#2563eb;color:#fff}
+.btn-save:hover{background:#1d4ed8}
+.btn-reset{background:#2a2a2a;color:#999}
+.btn-reset:hover{background:#333;color:#fff}
+
+.section-title{font-size:11px;color:#555;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase}
+
+/* COLOR PICKER */
+.bg-swatches{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.swatch.active{border-color:#fff}
+.swatch-custom{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid #444;overflow:hidden;position:relative;flex-shrink:0}
+.swatch-custom input[type=color]{position:absolute;top:-4px;left:-4px;width:32px;height:32px;border:none;background:none;cursor:pointer;opacity:0}
+.swatch-custom-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#777;pointer-events:none}
+
+/* PREVIEW */
+.preview-area{display:flex;align-items:center;justify-content:center;padding:28px;border-radius:12px;transition:background .2s}
+
+/* CARD */
+.biz-card{background:#fff;border-radius:14px;padding:18px;width:360px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transition:background .2s}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.owner-name{font-size:14px;font-weight:600;margin:0}
+.owner-role{font-size:11px;color:#9ca3af;margin:0}
+.type-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:7px}
+.card-body{border-top:1px solid #f0f0f0;padding-top:11px;display:flex;flex-direction:column;gap:9px}
+.card-row{display:flex;justify-content:space-between;align-items:center}
+.card-lbl{font-size:12px;color:#9ca3af}
+.card-val{font-size:12px;font-weight:500;text-align:right;max-width:200px}
+.card-cmd{font-family:'Courier New',monospace;background:#f3f4f6;padding:2px 7px;border-radius:5px;font-size:12px}
+.discount-row{border-top:1px solid #f0f0f0;padding-top:9px}
+.discount-badge{font-size:14px;font-weight:600;padding:3px 12px;border-radius:7px}
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <div class="section-title">Данные</div>
+  <div class="row">
+    <label>Владелец</label>
+    <input type="text" id="owner" placeholder="Solana_Flipper" oninput="render()">
+    <label>№</label>
+    <input type="number" id="biznum" placeholder="231" style="width:70px;flex:none" oninput="render()">
+  </div>
+  <div class="row">
+    <label>Локация</label>
+    <input type="text" id="location" placeholder="г. Лос-Сантос, возле ЦР" oninput="render()">
+  </div>
+  <div class="row">
+    <label>Скидка %</label>
+    <input type="number" id="discount" placeholder="90" min="0" max="100" style="width:70px;flex:none" oninput="render()">
+    <label>Тип (свой)</label>
+    <input type="text" id="customType" placeholder="или выбери ↓" oninput="customTypeInput(this)">
+  </div>
+  <div class="type-row" id="typeRow">
+    <button class="tbtn" data-type="24/7"       data-bg="#E1F5EE" data-color="#0F6E56" data-ab="#E1F5EE" data-ac="#0F6E56">24/7</button>
+    <button class="tbtn" data-type="Закусочная" data-bg="#EEEDFE" data-color="#534AB7" data-ab="#EEEDFE" data-ac="#534AB7">Закусочная</button>
+    <button class="tbtn" data-type="АЗС"        data-bg="#FAEEDA" data-color="#854F0B" data-ab="#EAF3DE" data-ac="#3B6D11">АЗС</button>
+    <button class="tbtn" data-type="Амуниция"   data-bg="#FCEBEB" data-color="#A32D2D" data-ab="#FCEBEB" data-ac="#A32D2D">Амуниция</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="section-title">Цвет внутри карточки</div>
+  <div class="bg-swatches" id="swatches">
+    <div class="swatch active" data-bg="#ffffff" style="background:#ffffff;border:1px solid #ccc"></div>
+    <div class="swatch" data-bg="#f8f8f8" style="background:#f8f8f8;border:1px solid #ccc"></div>
+    <div class="swatch" data-bg="#f0f4ff" style="background:#f0f4ff"></div>
+    <div class="swatch" data-bg="#f0fff8" style="background:#f0fff8"></div>
+    <div class="swatch" data-bg="#fff8f0" style="background:#fff8f0"></div>
+    <div class="swatch" data-bg="#1e1e1e" style="background:#1e1e1e"></div>
+    <div class="swatch" data-bg="#1a1a2e" style="background:#1a1a2e"></div>
+    <div class="swatch" data-bg="#0f2027" style="background:#0f2027"></div>
+    <div class="swatch" data-bg="#1a0533" style="background:#1a0533"></div>
+    <div class="swatch-custom" title="Свой цвет">
+      <div class="swatch-custom-inner" id="customSwatchInner">+</div>
+      <input type="color" id="customBgColor" value="#ffffff" oninput="setCustomBg(this.value)">
+    </div>
+  </div>
+</div>
+
+<div class="preview-area" id="previewArea" style="background:transparent">
+  <div class="biz-card" id="bizCard" style="background:#ffffff">
+    <div class="card-header">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div class="avatar" id="cardAvatar">SF</div>
+        <div>
+          <p class="owner-name" id="cardOwner" style="color:#111">Solana_Flipper</p>
+          <p class="owner-role">Владелец</p>
+        </div>
+      </div>
+      <span class="type-badge" id="cardType">24/7</span>
+    </div>
+    <div class="card-body">
+      <div class="card-row"><span class="card-lbl">Номер бизнеса</span><span class="card-cmd" id="cardCmd">/findibiz 231</span></div>
+      <div class="card-row"><span class="card-lbl">Расположение</span><span class="card-val" id="cardLoc" style="color:#111">г. Лос-Сантос, возле ЦР</span></div>
+      <div class="card-row"><span class="card-lbl">Тип бизнеса</span><span class="card-val" id="cardTypeLine" style="color:#111">24/7</span></div>
+      <div class="card-row discount-row"><span class="card-lbl">Скидка</span><span class="discount-badge" id="cardDiscount">−90%</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row" style="width:100%;max-width:480px;justify-content:flex-end">
+  <button class="btn btn-reset" onclick="resetForm()">↺ Сброс</button>
+  <button class="btn btn-save" onclick="saveCard()">💾 Сохранить PNG</button>
+</div>
+
+<script>
+let st={type:'24/7',typeBg:'#E1F5EE',typeColor:'#0F6E56',avatarBg:'#E1F5EE',avatarColor:'#0F6E56',cardBg:'#ffffff'};
+
+function initTypes(){
+  document.querySelectorAll('.tbtn').forEach(b=>{
+    b.style.background=b.dataset.bg;
+    b.style.color=b.dataset.color;
+    b.addEventListener('click',()=>{
+      st.type=b.dataset.type;st.typeBg=b.dataset.bg;st.typeColor=b.dataset.color;
+      st.avatarBg=b.dataset.ab;st.avatarColor=b.dataset.ac;
+      document.getElementById('customType').value='';
+      setActive(b);render();
+    });
+  });
+  setActive(document.querySelector('.tbtn'));
+}
+
+function setActive(el){document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');}
+
+function customTypeInput(el){
+  if(el.value.trim()){st.type=el.value.trim();st.typeBg='#F1EFE8';st.typeColor='#5F5E5A';st.avatarBg='#F1EFE8';st.avatarColor='#5F5E5A';setActive(null);}
+  render();
+}
+
+function initSwatches(){
+  document.querySelectorAll('.swatch').forEach(s=>{
+    s.addEventListener('click',()=>{
+      st.cardBg=s.dataset.bg;
+      document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+      s.classList.add('active');
+      applyBg();
+    });
+  });
+}
+
+function setCustomBg(v){
+  st.cardBg=v;
+  document.getElementById('customSwatchInner').style.background=v;
+  document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+  applyBg();
+}
+
+function applyBg(){
+  const card=document.getElementById('bizCard');
+  card.style.background=st.cardBg;
+  const isDark=isDarkColor(st.cardBg);
+  const textColor=isDark?'#e0e0e0':'#111';
+  const subColor=isDark?'#888':'#9ca3af';
+  const borderColor=isDark?'rgba(255,255,255,.08)':'#f0f0f0';
+  const cmdBg=isDark?'rgba(255,255,255,.08)':'#f3f4f6';
+  const cmdColor=isDark?'#ddd':'#111';
+  card.querySelectorAll('.owner-name,.card-val').forEach(el=>{el.style.color=textColor;});
+  card.querySelectorAll('.owner-role,.card-lbl').forEach(el=>{el.style.color=subColor;});
+  card.querySelectorAll('.card-body,.discount-row').forEach(el=>{el.style.borderTopColor=borderColor;});
+  card.querySelectorAll('.card-cmd').forEach(el=>{el.style.background=cmdBg;el.style.color=cmdColor;});
+}
+function isDarkColor(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(r*299+g*587+b*114)/1000<128;
+}
+
+function initials(n){return n.split(/[_\s]/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('')||'?'}
+
+function render(){
+  const owner=document.getElementById('owner').value||'Solana_Flipper';
+  const num=document.getElementById('biznum').value||'231';
+  const loc=document.getElementById('location').value||'г. Лос-Сантос, возле ЦР';
+  const disc=parseInt(document.getElementById('discount').value)||90;
+
+  const av=document.getElementById('cardAvatar');
+  av.textContent=initials(owner);av.style.background=st.avatarBg;av.style.color=st.avatarColor;
+  document.getElementById('cardOwner').textContent=owner;
+  const tb=document.getElementById('cardType');tb.textContent=st.type;tb.style.background=st.typeBg;tb.style.color=st.typeColor;
+  document.getElementById('cardCmd').textContent='/findibiz '+num;
+  document.getElementById('cardLoc').textContent=loc;
+  document.getElementById('cardTypeLine').textContent=st.type;
+  const db=document.getElementById('cardDiscount');
+  db.textContent='−'+disc+'%';
+  if(disc>=70){db.style.background='#FAECE7';db.style.color='#993C1D';}
+  else if(disc>=40){db.style.background='#FAEEDA';db.style.color='#854F0B';}
+  else{db.style.background='#EAF3DE';db.style.color='#3B6D11';}
+}
+
+function saveCard(){
+  const w=document.createElement('div');
+  w.style.cssText='display:inline-block;padding:24px;background:'+st.cardBg+';border-radius:20px;';
+  const clone=document.getElementById('bizCard').cloneNode(true);
+  w.appendChild(clone);document.body.appendChild(w);
+  html2canvas(w,{scale:3,backgroundColor:null,useCORS:true}).then(c=>{
+    const a=document.createElement('a');
+    a.download='biz_'+(document.getElementById('biznum').value||'card')+'.png';
+    a.href=c.toDataURL('image/png');a.click();
+    document.body.removeChild(w);
+  });
+}
+
+function resetForm(){
+  ['owner','biznum','location','discount','customType'].forEach(id=>document.getElementById(id).value='');
+  st={type:'24/7',typeBg:'#E1F5EE',typeColor:'#0F6E56',avatarBg:'#E1F5EE',avatarColor:'#0F6E56',cardBg:'#2b2b2b'};
+  document.getElementById('previewArea').style.background=st.cardBg;
+  document.querySelectorAll('.swatch').forEach((s,i)=>{s.classList.toggle('active',i===0);});
+  setActive(document.querySelector('.tbtn'));render();
+}
+
+initTypes();initSwatches();render();
+</script>
+</body>
+</html>
